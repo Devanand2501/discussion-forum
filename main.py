@@ -134,3 +134,13 @@ async def update_discussion(discussion_id: str, discussion: Discussion):
         return {"message": "Discussion updated successfully"}
     else:
         raise HTTPException(status_code=404, detail="Discussion not found")
+
+# Delete Discussion
+@app.delete("/delete_discussion/{discussion_id}")
+async def delete_discussion(discussion_id: str):
+    deleted_discussion = discussion_collection.delete_one({"_id": ObjectId(discussion_id)})
+    if deleted_discussion.deleted_count == 1:
+        return {"message": "Discussion deleted successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="Discussion not found")
+
