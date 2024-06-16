@@ -73,16 +73,16 @@ app = FastAPI()
 # Create User
 @app.post("/create_user/")
 async def create_user(user: User):
-    if users_collection.find_one({"mobile": user.mobile}) or users_collection.find_one({"email": user.email}):
+    if user_collection.find_one({"mobile": user.mobile}) or user_collection.find_one({"email": user.email}):
         raise HTTPException(status_code=400, detail="Mobile number or email already exists")
     user_obj = UserClass(**user.model_dump())
-    inserted_user = users_collection.insert_one(user_obj.to_dict())
+    inserted_user = user_collection.insert_one(user_obj.to_dict())
     return {"message": "User created successfully", "user_id": str(inserted_user.inserted_id)}
 
 # Read Users
 @app.get("/all_users/")
 async def read_users():
-    users = list(users_collection.find())
+    users = list(user_collection.find())
     formatted_users = []
     for user in users:
         user["_id"] = str(user["_id"])
@@ -92,7 +92,7 @@ async def read_users():
 # Search User by name
 @app.get("/search_users/")
 async def search_user(name: str):
-    users = list(users_collection.find({"name": {"$regex": name, "$options": "i"}}))
+    users = list(user_collection.find({"name": {"$regex": name, "$options": "i"}}))
     formatted_users = []
     for user in users:
         user["_id"] = str(user["_id"])
@@ -102,7 +102,7 @@ async def search_user(name: str):
 # Update User
 @app.put("/update_user/{user_id}")
 async def update_user(user_id: str, user: User):
-    updated_user = users_collection.update_one(
+    updated_user = user_collection.update_one(
         {"_id": ObjectId(user_id)}, {"$set": user.model_dump()})
     if updated_user.modified_count == 1:
         return {"message": "User updated successfully"}
@@ -112,8 +112,15 @@ async def update_user(user_id: str, user: User):
 # Delete User
 @app.delete("/delete_user/{user_id}")
 async def delete_user(user_id: str):
-    deleted_user = users_collection.delete_one({"_id": ObjectId(user_id)})
+    deleted_user = user_collection.delete_one({"_id": ObjectId(user_id)})
     if deleted_user.deleted_count == 1:
         return {"message": "User deleted successfully"}
     else:
         raise HTTPException(status_code=404, detail="User not found")
+
+# Create Discussion
+@app.post("/create_discussion/")
+async def create_discussion(discussion: Discussion):
+    discussion_obj = DiscussionClass(**discussion.dict())
+    inserted_discussion = discussion_collection.insert_one(discussion_obj.to_dict())
+    return {"message": "Discussion created successfully", "discussion_id": str(inserted_discussion.inserted_id)}
