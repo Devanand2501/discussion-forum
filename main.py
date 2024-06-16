@@ -1,8 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException,Query
 from typing import List,Optional
 from datetime import datetime
 import os
 from pymongo import MongoClient
+from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
 from bson import ObjectId
 from dotenv import load_dotenv
@@ -146,10 +147,19 @@ async def delete_discussion(discussion_id: str):
 
 # Get list of discussions based on tags
 @app.get("/discussions/tags/")
-async def get_discussions_by_tags(tags: List[str]):
-    discussions = list(discussion_collection.find({"hashtags": {"$in": tags}}))
+async def get_discussions_by_tags(tags: str = Query(...)):
+    tag_list = tags.split(",")
+    print(tags)
+    # documents = discussion_collection.find({
+    #     "hashtags": {"$regex": f"#{tags}", "$options": "i"} 
+    # })
+    documents = discussion_collection.find({
+        "hashtags": {"$in": [f"#{tag}" for tag in tag_list]} 
+    })
+    # for doc in documents:
+    #     print(doc)
     formatted_discussions = []
-    for discussion in discussions:
+    for discussion in documents:
         discussion["_id"] = str(discussion["_id"])
         formatted_discussions.append(discussion)
     return formatted_discussions
