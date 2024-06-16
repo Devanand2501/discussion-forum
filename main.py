@@ -124,3 +124,13 @@ async def create_discussion(discussion: Discussion):
     discussion_obj = DiscussionClass(**discussion.dict())
     inserted_discussion = discussion_collection.insert_one(discussion_obj.to_dict())
     return {"message": "Discussion created successfully", "discussion_id": str(inserted_discussion.inserted_id)}
+
+# Update Discussion
+@app.put("/update_discussion/{discussion_id}")
+async def update_discussion(discussion_id: str, discussion: Discussion):
+    updated_discussion = discussion_collection.update_one(
+        {"_id": ObjectId(discussion_id)}, {"$set": discussion.dict()})
+    if updated_discussion.modified_count == 1:
+        return {"message": "Discussion updated successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="Discussion not found")
