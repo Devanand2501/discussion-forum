@@ -144,3 +144,12 @@ async def delete_discussion(discussion_id: str):
     else:
         raise HTTPException(status_code=404, detail="Discussion not found")
 
+# Get list of discussions based on tags
+@app.get("/discussions/tags/")
+async def get_discussions_by_tags(tags: List[str]):
+    discussions = list(discussion_collection.find({"hashtags": {"$in": tags}}))
+    formatted_discussions = []
+    for discussion in discussions:
+        discussion["_id"] = str(discussion["_id"])
+        formatted_discussions.append(discussion)
+    return formatted_discussions
