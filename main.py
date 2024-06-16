@@ -3,7 +3,6 @@ from typing import List,Optional
 from datetime import datetime
 import os
 from pymongo import MongoClient
-from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
 from bson import ObjectId
 from dotenv import load_dotenv
@@ -164,6 +163,7 @@ async def get_discussions_by_tags(tags: str = Query(...)):
         formatted_discussions.append(discussion)
     return formatted_discussions
 
+# Get the discussions by text
 @app.get("/discussions/text/")
 async def get_discussions_by_text(text: str ):
     discussions = list(discussion_collection.find({"text": {"$regex": text, "$options": "i"}}))
