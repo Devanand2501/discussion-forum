@@ -163,3 +163,12 @@ async def get_discussions_by_tags(tags: str = Query(...)):
         discussion["_id"] = str(discussion["_id"])
         formatted_discussions.append(discussion)
     return formatted_discussions
+
+@app.get("/discussions/text/")
+async def get_discussions_by_text(text: str ):
+    discussions = list(discussion_collection.find({"text": {"$regex": text, "$options": "i"}}))
+    formatted_discussions = []
+    for discussion in discussions:
+        discussion["_id"] = str(discussion["_id"])
+        formatted_discussions.append(discussion)
+    return formatted_discussions
