@@ -215,3 +215,22 @@ async def like_discussion(discussion_id: str):
         return {"message": "Discussion liked successfully"}
     else:
         raise HTTPException(status_code=404, detail="Discussion not found")
+
+# Update a comment by index
+@app.put("/discussion/{discussion_id}/comments/{comment_index}")
+async def update_comment(discussion_id: str, comment_index: int, updated_comment: Comment):
+    discussion = discussion_collection.find_one({"_id": ObjectId(discussion_id)})
+
+    if discussion and "comments" in discussion and len(discussion["comments"]) > comment_index:
+        updated_comment_dict = updated_comment.dict()
+        updated_comment_dict["updated_on"] = datetime.now()
+        discussion["comments"][comment_index].update(updated_comment_dict)
+        discussion_collection.update_one(
+            {"_id": ObjectId(discussion_id)},
+            {"$set": {"comments": discussion["comments"]}}
+        )
+        return {"message": "Comment updated successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="Comment not found")
+
+
