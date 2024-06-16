@@ -204,3 +204,14 @@ async def add_comment(discussion_id:str,comment:Comment):
         raise HTTPException(status_code=404, detail="Discussion not found")
 
 
+# Like a discussion
+@app.patch("/discussions/{discussion_id}/like/")
+async def like_discussion(discussion_id: str):
+    updated_discussion = discussion_collection.update_one(
+        {"_id": ObjectId(discussion_id)},
+        {"$inc": {"likes": 1}}
+    )
+    if updated_discussion.modified_count == 1:
+        return {"message": "Discussion liked successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="Discussion not found")
