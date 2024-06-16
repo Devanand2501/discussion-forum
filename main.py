@@ -33,6 +33,17 @@ class Discussion(BaseModel):
     text: str
     image: Optional[str] = None 
     hashtags: List[str]
+    views: int = 0
+    likes: int = 0
+    comments: List['Comment'] = []
+    created_on: datetime = datetime.now()
+
+# Comment model
+class Comment(BaseModel):
+    text: str
+    author: str
+    likes: int = 0
+    replies: List['Comment'] = []
     created_on: datetime = datetime.now()
 
 # User class
@@ -52,19 +63,25 @@ class UserClass:
 
 # Discussion class
 class DiscussionClass:
-    def __init__(self, text: str, image: Optional[str], hashtags: List[str], created_on: datetime = datetime.now(), id: str = None):
+    def __init__(self, text: str, image: Optional[str], hashtags: List[str], created_on: datetime = datetime.now(), views: int = 0, likes: int = 0, comments: List[Comment] = None, id: str = None):
         self.id = id
         self.text = text
         self.image = image
         self.hashtags = hashtags
         self.created_on = created_on
+        self.views = views
+        self.likes = likes
+        self.comments = comments or []
 
     def to_dict(self):
         return {
             "text": self.text,
             "image": self.image,
             "hashtags": self.hashtags,
-            "created_on": self.created_on
+            "created_on": self.created_on,
+            "views":self.views,
+            "likes":self.likes,
+            "comments": [comment.dict() for comment in self.comments]
         }
 
 # FastAPI instance
@@ -172,3 +189,18 @@ async def get_discussions_by_text(text: str ):
         discussion["_id"] = str(discussion["_id"])
         formatted_discussions.append(discussion)
     return formatted_discussions
+
+# Add a comment to discussion
+@app.put("/discussion/{discussion_id}/comments")
+async def add_comment(discussion_id:str,comment:Comment):
+    new_comment = comment.dict()
+    updated_discussion = discussion_collection.update_one(
+        {"_id": ObjectId(discussion_id)},
+        {"$push": {"comments": new_comment}}
+    )
+    if updated_discussion.modified_count == 1:
+        return {"message": "Comment added successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="Discussion not found")
+
+
