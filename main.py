@@ -205,7 +205,7 @@ async def add_comment(discussion_id:str,comment:Comment):
 
 
 # Like a discussion
-@app.patch("/discussions/{discussion_id}/like/")
+@app.patch("/discussion/{discussion_id}/like/")
 async def like_discussion(discussion_id: str):
     updated_discussion = discussion_collection.update_one(
         {"_id": ObjectId(discussion_id)},
