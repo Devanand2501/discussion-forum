@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
-from typing import List
+from typing import List,Optional
+from datetime import datetime
 import os
 from pymongo import MongoClient
 from pydantic import BaseModel
@@ -10,12 +11,12 @@ load_dotenv()
 # MongoDB connection
 url = os.getenv("ATLAS_URL")
 database = os.getenv("DB_NAME")
-discussion = os.getenv("DISCUSSION_COLLECTION")
+discussions = os.getenv("DISCUSSION_COLLECTION")
 users = os.getenv("USER_COLLECTION")
 client = MongoClient(url)
 db = client[database]
-discussion_collection = db[discussion]
-users_collection = db[users]
+discussion_collection = db[discussions]
+user_collection = db[users]
 # print("url-->",url)
 # print("database-->",database)
 # print("disucssion collection-->",disucssion)
@@ -26,6 +27,13 @@ class User(BaseModel):
     name: str
     mobile: str
     email: str
+
+# Discussion Model
+class Discussion(BaseModel):
+    text: str
+    image: Optional[str] = None 
+    hashtags: List[str]
+    created_on: datetime = datetime.now()
 
 # User class
 class UserClass:
@@ -42,6 +50,22 @@ class UserClass:
             "email": self.email
         }
 
+# Discussion class
+class DiscussionClass:
+    def __init__(self, text: str, image: Optional[str], hashtags: List[str], created_on: datetime = datetime.now(), id: str = None):
+        self.id = id
+        self.text = text
+        self.image = image
+        self.hashtags = hashtags
+        self.created_on = created_on
+
+    def to_dict(self):
+        return {
+            "text": self.text,
+            "image": self.image,
+            "hashtags": self.hashtags,
+            "created_on": self.created_on
+        }
 
 # FastAPI instance
 app = FastAPI()
