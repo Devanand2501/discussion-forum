@@ -1,7 +1,3 @@
-Sure, let's add sections for the system architecture diagram and database schema to the README.
-
----
-
 # Discussion and User Management API
 
 This project provides a FastAPI-based REST API for managing users, discussions, comments, and replies. Users can follow/unfollow other users, like comments, and reply to comments. The API interacts with a MongoDB database to store data.
@@ -43,7 +39,7 @@ The detailed API documentation, including request and response examples for each
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/your-repo.git
+    https://github.com/Devanand2501/discussion-forum.git
     cd your-repo
     ```
 
@@ -159,7 +155,7 @@ Content-Type: application/json
 
 ### Diagram
 
-![System Architecture Diagram](path/to/your/architecture_diagram.png)
+![System Architecture Diagram](System Architecture.svg)
 
 *Please replace the placeholder with the actual path to your system architecture diagram image.*
 
