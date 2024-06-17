@@ -369,3 +369,20 @@ async def delete_comment(discussion_id: str, comment_index: int):
     else:
         raise HTTPException(status_code=404, detail="Comment not found")
 
+# Reply to a comment by index
+@app.put("/discussion/{discussion_id}/comments/{comment_index}/reply")
+async def reply_to_comment(discussion_id: str, comment_index: int, reply: Comment):
+    discussion = discussion_collection.find_one({"_id": ObjectId(discussion_id)})
+
+    if discussion and "comments" in discussion and len(discussion["comments"]) > comment_index:
+        reply_dict = reply.dict()
+        if "replies" not in discussion["comments"][comment_index]:
+            discussion["comments"][comment_index]["replies"] = []
+        discussion["comments"][comment_index]["replies"].append(reply_dict)
+        discussion_collection.update_one(
+            {"_id": ObjectId(discussion_id)},
+            {"$set": {"comments": discussion["comments"]}}
+        )
+        return {"message": "Reply added successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="Comment not found")
