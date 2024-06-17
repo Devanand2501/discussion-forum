@@ -125,8 +125,24 @@ async def search_user(name: str):
 # Update User
 @app.put("/update_user/{user_id}")
 async def update_user(user_id: str, user: User):
+    existing_user_with_mobile = user_collection.find_one({"mobile": user.mobile})
+    existing_user_with_email = user_collection.find_one({"email": user.email})
+    
+    # Get the current user's mobile number
+    # current_user = user_collection.find_one({"_id": ObjectId(user_id)})
+    # current_user_mobile = current_user.get("mobile") if current_user else None
+    
+    # Check if the updated mobile or email already exists for another user
+    if existing_user_with_mobile and existing_user_with_mobile["_id"] != ObjectId(user_id):
+        raise HTTPException(status_code=400, detail="Mobile number already exists")
+    
+    if existing_user_with_email and existing_user_with_email["_id"] != ObjectId(user_id):
+        raise HTTPException(status_code=400, detail="Email already exists")
+    
+    # Update the user
     updated_user = user_collection.update_one(
         {"_id": ObjectId(user_id)}, {"$set": user.model_dump()})
+    
     if updated_user.modified_count == 1:
         return {"message": "User updated successfully"}
     else:
