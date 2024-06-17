@@ -154,10 +154,8 @@ Content-Type: application/json
 ## System Architecture
 
 ### Diagram
-
-![System Architecture Diagram](System Architecture.png)
-
-*Please replace the placeholder with the actual path to your system architecture diagram image.*
+![System Architecture Diagram](![System Architecture Diagram](https://github.com/Devanand2501/discussion-forum/blob/main/Architecture.png?raw=true)
+System Architecture.png)
 
 The system architecture consists of:
 
