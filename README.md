@@ -155,7 +155,7 @@ Content-Type: application/json
 
 ### Diagram
 
-![System Architecture Diagram]("System Architecture.svg")
+![System Architecture Diagram](System Architecture.svg)
 
 *Please replace the placeholder with the actual path to your system architecture diagram image.*
 
