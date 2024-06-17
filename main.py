@@ -193,6 +193,22 @@ async def unfollow_user(user_id: str, target_user_id: str):
     else:
         raise HTTPException(status_code=404, detail="User not found")
 
+# List of Followed Users
+@app.get("/user/{user_id}/followed_users/")
+async def get_followed_users(user_id: str):
+    user = user_collection.find_one({"_id": ObjectId(user_id)})
+
+    if user:
+        followed_users = []
+        for followed_user_id in user["followed_users"]:
+            followed_user = user_collection.find_one({"_id": ObjectId(followed_user_id)})
+            if followed_user:
+                followed_user["_id"] = str(followed_user["_id"])
+                followed_users.append(followed_user)
+        return followed_users
+    else:
+        raise HTTPException(status_code=404, detail="User not found")
+
 # Create Discussion
 @app.post("/create_discussion/")
 async def create_discussion(discussion: Discussion):
