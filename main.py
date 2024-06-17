@@ -141,11 +141,12 @@ async def delete_user(user_id: str):
     else:
         raise HTTPException(status_code=404, detail="User not found")
 
+# Follow User
 @app.put("/follow/{user_id}/")
 async def follow_user(user_id: str, target_user_id: str):
     user = user_collection.find_one({"_id": ObjectId(user_id)})
     target_user = user_collection.find_one({"_id": ObjectId(target_user_id)})
-    
+
     if user and target_user:
         if target_user_id not in user["followed_users"]:
             user["followed_users"].append(target_user_id)
@@ -163,6 +164,32 @@ async def follow_user(user_id: str, target_user_id: str):
             return {"message": "User followed successfully"}
         else:
             return {"message": "User is already followed"}
+    else:
+        raise HTTPException(status_code=404, detail="User not found")
+
+# Unfollow User
+@app.put("/unfollow/{user_id}/")
+async def unfollow_user(user_id: str, target_user_id: str):
+    user = user_collection.find_one({"_id": ObjectId(user_id)})
+    target_user = user_collection.find_one({"_id": ObjectId(target_user_id)})
+
+    if user and target_user:
+        if target_user_id in user["followed_users"]:
+            user["followed_users"].remove(target_user_id)
+            target_user["followers"].remove(user_id)
+            
+            user_collection.update_one(
+                {"_id": ObjectId(user_id)},
+                {"$set": {"followed_users": user["followed_users"]}}
+            )
+            
+            user_collection.update_one(
+                {"_id": ObjectId(target_user_id)},
+                {"$set": {"followers": target_user["followers"]}}
+            )
+            return {"message": "User unfollowed successfully"}
+        else:
+            return {"message": "User is not followed"}
     else:
         raise HTTPException(status_code=404, detail="User not found")
 
