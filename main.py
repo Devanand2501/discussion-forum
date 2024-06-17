@@ -234,3 +234,16 @@ async def update_comment(discussion_id: str, comment_index: int, updated_comment
         raise HTTPException(status_code=404, detail="Comment not found")
 
 
+# Like a comment by index
+@app.patch("/discussion/{discussion_id}/comments/{comment_index}/like")
+async def like_comment(discussion_id: str, comment_index: int):
+    discussion = discussion_collection.find_one({"_id": ObjectId(discussion_id)})
+    if discussion and "comments" in discussion and len(discussion["comments"]) > comment_index:
+        discussion["comments"][comment_index]["likes"] += 1
+        discussion_collection.update_one(
+            {"_id": ObjectId(discussion_id)},
+            {"$set": {"comments": discussion["comments"]}}
+        )
+        return {"message": "Comment liked successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="Comment not found")
