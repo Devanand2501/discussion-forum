@@ -3,7 +3,7 @@ from typing import List,Optional
 from datetime import datetime
 import os
 from pymongo import MongoClient
-from pydantic import BaseModel
+from pydantic import BaseModel,Field
 from bson import ObjectId
 from dotenv import load_dotenv
 load_dotenv()
@@ -27,6 +27,8 @@ class User(BaseModel):
     name: str
     mobile: str
     email: str
+    followed_users: List[str] = Field(default_factory=list)
+    followers: List[str] = Field(default_factory=list)
 
 # Discussion Model
 class Discussion(BaseModel):
@@ -48,17 +50,21 @@ class Comment(BaseModel):
 
 # User class
 class UserClass:
-    def __init__(self, name: str, mobile: str, email: str, id: str = None):
+    def __init__(self, name: str, mobile: str, email: str, followed_users: List[str] = None, followers: List[str] = None, id: str = None):
         self.id = id
         self.name = name
         self.mobile = mobile
         self.email = email
+        self.followed_users = followed_users or []
+        self.followers = followers or []
 
     def to_dict(self):
         return {
             "name": self.name,
             "mobile": self.mobile,
-            "email": self.email
+            "email": self.email,
+            "followed_users": self.followed_users,
+            "followers": self.followers
         }
 
 # Discussion class
@@ -132,6 +138,31 @@ async def delete_user(user_id: str):
     deleted_user = user_collection.delete_one({"_id": ObjectId(user_id)})
     if deleted_user.deleted_count == 1:
         return {"message": "User deleted successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="User not found")
+
+@app.put("/follow/{user_id}/")
+async def follow_user(user_id: str, target_user_id: str):
+    user = user_collection.find_one({"_id": ObjectId(user_id)})
+    target_user = user_collection.find_one({"_id": ObjectId(target_user_id)})
+    
+    if user and target_user:
+        if target_user_id not in user["followed_users"]:
+            user["followed_users"].append(target_user_id)
+            target_user["followers"].append(user_id)
+            
+            user_collection.update_one(
+                {"_id": ObjectId(user_id)},
+                {"$set": {"followed_users": user["followed_users"]}}
+            )
+            
+            user_collection.update_one(
+                {"_id": ObjectId(target_user_id)},
+                {"$set": {"followers": target_user["followers"]}}
+            )
+            return {"message": "User followed successfully"}
+        else:
+            return {"message": "User is already followed"}
     else:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -262,3 +293,4 @@ async def delete_comment(discussion_id: str, comment_index: int):
         return {"message": "Comment deleted successfully"}
     else:
         raise HTTPException(status_code=404, detail="Comment not found")
+
